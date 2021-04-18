@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: data
+  name: data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: data
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service: data
+    spec:
+      containers:
+        - args:
+            - "true"
+          image: postgres:latest
+          command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
+          name: data
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: db-data
+      restartPolicy: Always
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: db-data
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    service: db-data
+  name: db-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}

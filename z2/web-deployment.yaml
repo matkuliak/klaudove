@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: web
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: web
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service: web
+    spec:
+      containers:
+        - args:
+            - /usr/local/bin/gunicorn
+            - -w
+            - "2"
+            - -b
+            - :8000
+            - app:app
+          env:
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_NAME
+                  name: env
+            - name: DB_PASS
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PASS
+                  name: env
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PORT
+                  name: env
+            - name: DB_SERVICE
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_SERVICE
+                  name: env
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USER
+                  name: env
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  key: DEBUG
+                  name: env
+            - name: SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: SECRET_KEY
+                  name: env
+          image: nameton/z2_web:2
+          name: web
+          ports:
+            - containerPort: 8000
+          resources: {}
+          volumeMounts:
+            - mountPath: /usr/src/app/static
+              name: web-data
+      restartPolicy: Always
+      volumes:
+        - name: web-data
+          persistentVolumeClaim:
+            claimName: web-data
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: web
+  name: web
+spec:
+  ports:
+    - name: "8000"
+      port: 8000
+      targetPort: 8000
+  selector:
+    service: web
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    service: web-data
+  name: web-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}

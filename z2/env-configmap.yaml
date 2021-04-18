@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  DB_NAME: postgres
+  DB_PASS: postgres
+  DB_PORT: "5432"
+  DB_SERVICE: postgres
+  DB_USER: postgres
+  DEBUG: "False"
+  SECRET_KEY: 5(15ds+i2+%ik6z&!yer+ga9m=e%jcqiz_5wszg)r-z!2--b2d
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: web-env
+  name: env
